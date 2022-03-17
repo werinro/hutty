@@ -10,9 +10,9 @@ wlr::Socket::Socket()
 
 wlr::Socket::~Socket()
 {
-    /*if (this->m_fg != 3) {
+    if (this->m_fg != 3) {
 		this->close();
-    }*/
+    }
 }
 
 void wlr::Socket::connect(std::string host, int port)

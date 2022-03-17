@@ -256,16 +256,16 @@ std::map<intptr_t, std::pair<bool, void*> > wlr::ThreadFuture::s_futute_map = st
 
 
 
-wlr::Runable::Runable(void* args)
+wlr::Runnable::Runnable(void* args)
 	: m_args(args)
 {}
 
-void* wlr::Runable::args()
+void* wlr::Runnable::args()
 { return this->m_args; }
 
-wlr::Runable::~Runable()
+wlr::Runnable::~Runnable()
 {
-	// POOL_DEBUG("wlr::Runable::~Runable()\n");
+	// POOL_DEBUG("wlr::Runnable::~Runnable()\n");
 }
 
 
@@ -352,6 +352,7 @@ wlr::Future* wlr::ThreadPool::submit(Task* task, OverflowPolicy overflow_policy)
                 }
             }
 			this->m_thread_mutex.unlock();
+			break;
 		} 
 		else break;
 		return NULL;
@@ -384,10 +385,10 @@ wlr::Future* wlr::ThreadPool::submit(Task* task, OverflowPolicy overflow_policy)
 	return new wlr::ThreadFuture((intptr_t)task);
 }
 
-wlr::Future* wlr::ThreadPool::submit(wlr::Runable* runable, OverflowPolicy overflow_policy) throw(ThreadException)
+wlr::Future* wlr::ThreadPool::submit(wlr::Runnable* runnable, OverflowPolicy overflow_policy) throw(ThreadException)
 {
 	wlr::ThreadPool::Task* task = new wlr::ThreadPool::Task;
-	task->m_runable = runable;
+	task->m_runnable = runnable;
 	return this->submit(task, overflow_policy);
 }
 
@@ -436,6 +437,9 @@ void* wlr::ThreadPool::master(void* pool)
 			std::pair<bool, wlr::ThreadPool::Task*> task_pair = tp->m_task_queue->pop();
 			while(task_pair.first)
 			{
+				if (task_pair.second->m_runnable) {
+					delete task_pair.second->m_runnable;
+				}
 				delete task_pair.second;
 				task_pair = tp->m_task_queue->pop();
 			}
@@ -532,16 +536,16 @@ void* wlr::ThreadPool::worker(void* pool)
 			intptr_t task_id = (intptr_t)task;
 			try {
 				if (task->m_task) return_data = task->m_task(task->m_args);
-				if (task->m_runable) {
-					return_data = task->m_runable->run(task->m_runable->args());
-					delete task->m_runable;
-					task->m_runable = NULL;
+				if (task->m_runnable) {
+					return_data = task->m_runnable->run(task->m_runnable->args());
+					delete task->m_runnable;
+					task->m_runnable = NULL;
 				}
 			} catch(wlr::Exception e) {
 				POOL_ERROR("%s\n%s", e.message().c_str(), e.stackString().c_str());
 			} catch(...) {
 				wlr::Thread::printStack(10);
-				if (task->m_runable) delete task->m_runable;
+				if (task->m_runnable) delete task->m_runnable;
 			}
 			wlr::ThreadFuture::set(task_id, return_data);
 	        delete task;

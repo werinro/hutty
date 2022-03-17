@@ -83,37 +83,37 @@ private:
 
 
 
-class Runable
+class Runnable
 {
 public:
-	explicit Runable(void* args = 0);
+	explicit Runnable(void* args = 0);
 	void* args();
     virtual void* run(void* args) = 0;
-	virtual ~Runable();
+	virtual ~Runnable();
 private:
 	void* m_args;
 };
 
 
 
-class FunctionRunable : public Runable
+class FunctionRunnable : public Runnable
 {
 public:
 	template<typename F>
-	explicit FunctionRunable(F func)
-		: FunctionRunable(func, NULL)
+	explicit FunctionRunnable(F func)
+		: FunctionRunnable(func, NULL)
 	{}
 
 	template<typename F>
-    explicit FunctionRunable(F func, void* args)
-        : Runable(args)
+    explicit FunctionRunnable(F func, void* args)
+        : Runnable(args)
         , m_func((void* (*)(void*))func)
     {}
 
     virtual void* run(void* args) override
     { return this->m_func(args); }
 
-    virtual ~FunctionRunable() override {}
+    virtual ~FunctionRunnable() override {}
 
 private:
 	void* (*m_func)(void*);
@@ -128,7 +128,7 @@ public:
     {
         void* m_args = NULL;
         void* (*m_task)(void*) = 0;
-		wlr::Runable* m_runable = NULL;
+		wlr::Runnable* m_runnable = NULL;
     } Task;
 
 	typedef enum Policy
@@ -174,7 +174,7 @@ private:
 
 public:
     wlr::Future* submit(void* (*func)(void*), void* args, OverflowPolicy overflow_policy = DISCARD_DELETE) throw(wlr::ThreadException);
-    wlr::Future* submit(wlr::Runable* runable, OverflowPolicy overflow_policy = DISCARD_DELETE) throw(wlr::ThreadException);
+    wlr::Future* submit(wlr::Runnable* runnable, OverflowPolicy overflow_policy = DISCARD_DELETE) throw(wlr::ThreadException);
 	
 
     void shutdown();		// 关闭线程池, 析构默认调用

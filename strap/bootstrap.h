@@ -94,6 +94,8 @@ public:
 	};
 
 protected:
+	wlr::Mutex m_accept_mutex;
+	wlr::Mutex m_rw_map_mutex;
 	std::map<wlr::AbstractBootstrap::Selector::Event, std::list<wlr::AbstractBootstrap::Selector*> > m_selector_map;
 	std::map<wlr::ChannelId, wlr::AbstractBootstrap::Selector*> m_read_map;
 	std::map<wlr::ChannelId, wlr::AbstractBootstrap::Selector*> m_write_map;

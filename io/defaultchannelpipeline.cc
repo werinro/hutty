@@ -68,6 +68,7 @@ void wlr::DefaultChannelPipeline::fireRegistered()
 void wlr::DefaultChannelPipeline::fireChannelRead()
 { 
 	W_DEBUG_PRINT(fireChannelRead)
+	if (this->m_destroyed) return;
 	this->m_head->invokeChannelRead(NULL); 
 }
 
@@ -80,12 +81,14 @@ void wlr::DefaultChannelPipeline::fireClosed()
 void wlr::DefaultChannelPipeline::fireDestroyed()
 { 
 	W_DEBUG_PRINT(fireDestroyed)
+	this->m_destroyed = 1;
 	this->m_head->invokeDestroyed(); 
 }
 
 void wlr::DefaultChannelPipeline::fireChannelWrite()
 { 
 	W_DEBUG_PRINT(fireChannelWrite)
+	if (this->m_destroyed) return;
 	this->m_tail->invokeChannelWrite(NULL); 
 }
 
@@ -98,6 +101,7 @@ void wlr::DefaultChannelPipeline::fireHandler()
 void wlr::DefaultChannelPipeline::fireExceptioned(wlr::Exception* ex)
 { 
 	W_DEBUG_PRINT(fireExceptioned)
+	if (this->m_destroyed) return;
 	this->m_head->invokeExceptioned(ex); 
 }
 
@@ -111,3 +115,6 @@ void wlr::DefaultChannelPipeline::fireEventLoopGroup(wlr::EventLoopGroup* elp)
 	}
 	// std::dynamic_cast<>
 }
+
+bool wlr::DefaultChannelPipeline::destroyed() 
+{ return this->m_destroyed; }

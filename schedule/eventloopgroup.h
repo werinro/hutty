@@ -10,12 +10,12 @@ namespace wlr
 {
 
 
-class Runable;
+class Runnable;
 class EventLoopGroup
 {
 public:
 	virtual	~EventLoopGroup() {}
-	virtual wlr::Future* submit(wlr::Runable* runable) = 0;
+	virtual wlr::Future* submit(wlr::Runnable* runnable) = 0;
 	virtual wlr::Future* submit(void* (*func)(void*), void* args = 0) = 0;
 	virtual wlr::ScheduleFuture* schedule(wlr::Schedule* schedule) = 0;
 	virtual void shutdown() = 0;

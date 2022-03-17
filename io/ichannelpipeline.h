@@ -20,7 +20,7 @@ class ChannelPipeline
 {
 public:
 	explicit ChannelPipeline(wlr::SocketChannel* socket_channel) : m_sc(socket_channel) {}
-	virtual ~ChannelPipeline() { printf("~ChannelPipeline()\n"); }
+	virtual ~ChannelPipeline() { /*printf("~ChannelPipeline()\n");*/ }
 	virtual ChannelPipeline* addFirst(wlr::ChannelHandler* handler, std::string name = "") = 0;
 	virtual ChannelPipeline* addLast(wlr::ChannelHandler* handler, std::string name = "") = 0;
 	virtual wlr::ChannelHandlerContext* handlerContext(std::string name) = 0;
@@ -35,6 +35,7 @@ public:
     virtual void fireHandler() = 0;
     virtual void fireExceptioned(wlr::Exception* ex) = 0;
 	virtual void fireEventLoopGroup(wlr::EventLoopGroup* elg) = 0;
+	virtual bool destroyed() = 0;
 protected:
 	wlr::SocketChannel* m_sc;
 };

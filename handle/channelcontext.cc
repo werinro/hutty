@@ -136,7 +136,7 @@ wlr::DefaultChannelHandlerContext::~DefaultChannelHandlerContext()
 		delete this->m_handler;
 		this->m_handler = NULL;
 	}
-	LOG_DEBUG("wlr::DefaultChannelHandlerContext::~DefaultChannelHandlerContext = %d\n", this);
+	// LOG_DEBUG("wlr::DefaultChannelHandlerContext::~DefaultChannelHandlerContext = %d\n", this);
 	//if (this->m_prev) this->m_prev->m_next = this->m_next;
 	//if (this->m_next) this->m_next->m_prev = this->m_prev;
 }
@@ -157,7 +157,7 @@ void wlr::HeadChannelHandlerContext::invokeChannelRead(wlr::ByteBuf* buf)
 	if (!readBuf) readBuf = new wlr::ByteBuf(1024 << 10);
 	int len;
 	wlr::SocketChannel* socket_channel = this->socketChannel();
-	LOG_DEBUG("socket channel id = %d, start read\n");
+	LOG_DEBUG("socket channel id = %d, start read\n", socket_channel->channelId().id());
 	try {
 		while((len = socket_channel->read(readBuf)) != -1)
 		{
@@ -167,7 +167,7 @@ void wlr::HeadChannelHandlerContext::invokeChannelRead(wlr::ByteBuf* buf)
 		}
 	} catch(wlr::Exception e) {
 		W_DELETE(readBuf);
-		LOG_DEBUG("通道读取异常, 异常信息=%s\n", e.message().c_str());
+		LOG_ERROR("channel read error, error message = %s\n", e.message().c_str());
 		throw e;
     } catch(...) {
 		LOG_ERROR("channel read error, channel id = %d\n", socket_channel->channelId().id());

@@ -31,8 +31,10 @@ public:
     virtual void fireHandler() override;
     virtual void fireExceptioned(wlr::Exception* ex) override;
 	virtual void fireEventLoopGroup(wlr::EventLoopGroup* elp) override;
+	virtual bool destroyed() override;
 
 private:
+	bool m_destroyed = 0;
 	wlr::SocketChannelContextHandler* m_scc_handler;
 	wlr::DefaultChannelHandlerContext* m_head;
 	wlr::DefaultChannelHandlerContext* m_tail;

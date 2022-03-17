@@ -126,7 +126,7 @@ wlr::ChannelFuture* wlr::ServerBootstrap::sync() throw(wlr::Exception)
 		W_THROW(NullPointerException, "boos event pool or worker event pool is null");
 
 	this->m_future->init("start init");
-	wlr::Future* f = this->m_boos->submit(new wlr::FunctionRunable([](void* wsb) -> void* {
+	wlr::Future* f = this->m_boos->submit(new wlr::FunctionRunnable([](void* wsb) -> void* {
 		wlr::ServerBootstrap* s_bootstrap = (wlr::ServerBootstrap*)wsb;
 		if (!s_bootstrap->m_socket_factory) {
 			s_bootstrap->m_future->error("socket factory is null");	
@@ -212,7 +212,9 @@ void* wlr::ServerBootstrap::boos(void* wsb)
 			channel_pipeline->fireConnected();
 			// 将通道注册到选择队列
 			wlr::AbstractBootstrap::Selector* accept_selector = new wlr::AbstractBootstrap::Selector(socket_channel, wlr::AbstractBootstrap::Selector::ACCEPT);
+			s_bootstrap->m_accept_mutex.lock();
 			(*iter_pair).second.push_back(accept_selector);
+			s_bootstrap->m_accept_mutex.unlock();
 			// 调用通道注册处理器
 			channel_pipeline->fireRegistered();
 			
@@ -246,13 +248,18 @@ void* wlr::ServerBootstrap::workerSelect(void* wsb)
 				// 判断通道是否关闭
 				if (socket_channel->isClose())
 				{	
-					socket_channel->channelPipeline()->fireDestroyed();
-					delete socket_channel;
-					delete (*l_iter);
-					(*iter_pair).second.erase(l_iter);
-					l_iter = (*iter_pair).second.begin();
-					l_iter--;
-					continue;		
+					if (!socket_channel->channelPipeline()->destroyed()) {
+						socket_channel->channelPipeline()->fireDestroyed();
+					} else {
+						delete socket_channel;
+						delete (*l_iter);
+						s_bootstrap->m_accept_mutex.lock();
+						(*iter_pair).second.erase(l_iter);
+						s_bootstrap->m_accept_mutex.unlock();
+						l_iter = (*iter_pair).second.begin();
+						l_iter--;
+						continue;
+					}		
 				}
 			
 				// 判断通道是否有写入写出事件
@@ -263,7 +270,9 @@ void* wlr::ServerBootstrap::workerSelect(void* wsb)
 	{ \
 		LOG_INFO("select %s, channel id = %d\n", #try_func, channel_id); \
 		wlr::Future* f = NULL; \
+		s_bootstrap->m_rw_map_mutex.lock(); \
 		map.insert(wlr::toPair(channel_id, (*l_iter))); \
+		s_bootstrap->m_rw_map_mutex.unlock(); \
 		wlr::AbstractBootstrap::Selector* select_event = new wlr::AbstractBootstrap::Selector(socket_channel, event); \
         f = s_bootstrap->m_worker->submit(&wlr::ServerBootstrap::workerHandler, new std::pair<wlr::AbstractBootstrap::Selector*, wlr::ServerBootstrap*>(select_event, s_bootstrap)); \
 		if (f) delete f; \
@@ -297,13 +306,17 @@ void* wlr::ServerBootstrap::workerHandler(void* event_pair)
 		// 处理事件
 		if (selector->event() == wlr::AbstractBootstrap::Selector::READ)
 		{
+			s_bootstrap->m_rw_map_mutex.lock();
 			s_bootstrap->m_read_map.erase(socket_channel->channelId());
+			s_bootstrap->m_rw_map_mutex.unlock();
 			socket_channel->channelPipeline()->fireChannelRead();
 		}
 		else if (selector->event() == wlr::AbstractBootstrap::Selector::WRITE)
 		{
 			// socket_channel->channelPipeline()->fireChannelWrite();
+			s_bootstrap->m_rw_map_mutex.lock();
 			s_bootstrap->m_write_map.erase(socket_channel->channelId());
+			s_bootstrap->m_rw_map_mutex.unlock();
 			socket_channel->flush();
 		}
 	} catch(wlr::Exception e) {

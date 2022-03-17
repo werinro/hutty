@@ -23,7 +23,7 @@ wlr::ByteBuf::ByteBuf(ByteBuf &buf, int len, int capacity)
 
 wlr::ByteBuf::~ByteBuf()
 {
-	printf("-----------wlr::ByteBuf::~ByteBuf()---------\n");
+	// printf("-----------wlr::ByteBuf::~ByteBuf()---------\n");
     free(this->m_buf);
 }
 
