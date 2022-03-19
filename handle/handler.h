@@ -10,11 +10,20 @@ namespace wlr
 {
 
 
-class ChannelHandlerContext;
-class ChannelHandler
+
+class IHandler
 {
 public:
-	virtual ~ChannelHandler() { LOG_DEBUG("~ChannelHandler(%d)\n", this); }
+	virtual ~IHandler() = default;
+};
+
+
+
+class ChannelHandlerContext;
+class ChannelHandler : public virtual IHandler
+{
+public:
+	virtual ~ChannelHandler() override { LOG_DEBUG("~ChannelHandler(%d)\n", this); }
 
 	/**
 	*	Channel handler function, called when the read or write is complete.
@@ -40,7 +49,7 @@ public:
 	*	Called when a channel is registered with a selector
 	*   @Param  chc current handler context
 	*/ 
-    virtual void registered(wlr::ChannelHandlerContext* chc) = 0;
+	virtual void registered(wlr::ChannelHandlerContext* chc) = 0;
 
 	/**
 	*	Called when the channel connection is closed
@@ -52,65 +61,21 @@ public:
 	*	Called when channel related resources are destroyed
 	*	@Param  chc current handler context
 	*/ 
-    virtual void destroyed(wlr::ChannelHandlerContext* chc) = 0;
+	virtual void destroyed(wlr::ChannelHandlerContext* chc) = 0;
 
-	virtual void channelRead(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf) = 0;
-	virtual void channelWrite(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf) = 0;
-
-	/**
-	*	Whether the handler is read
-	*/	
-	virtual bool inbound() = 0;
-
-	/**
-	*	Whether the handler is write
-	*/ 
-	virtual bool outbound() = 0;
 };
 
 
-class InboundChannelHandler : public ChannelHandler
-{
-public:
-	virtual void handler(wlr::ChannelHandlerContext*, wlr::ByteBuf*) {}
-    virtual void exceptioned(wlr::ChannelHandlerContext*, wlr::Exception*) {}
-    virtual void connected(wlr::ChannelHandlerContext*) {}
-    virtual void registered(wlr::ChannelHandlerContext*) {}
-    virtual void closed(wlr::ChannelHandlerContext*) {}
-    virtual void destroyed(wlr::ChannelHandlerContext*) {}
-	virtual void channelWrite(wlr::ChannelHandlerContext*, wlr::ByteBuf*) {}
-	virtual void channelRead(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf) = 0;
-	virtual bool inbound() {return true;}
-	virtual bool outbound() {return false;}
-};
 
-
-class OutboundChannelHandler : public ChannelHandler
-{
-public:
-	virtual void handler(wlr::ChannelHandlerContext*, wlr::ByteBuf*) {}
-    virtual void exceptioned(wlr::ChannelHandlerContext*, wlr::Exception*) {}
-    virtual void connected(wlr::ChannelHandlerContext*) {}
-    virtual void registered(wlr::ChannelHandlerContext*) {}
-    virtual void closed(wlr::ChannelHandlerContext*) {}
-    virtual void destroyed(wlr::ChannelHandlerContext*) {}
-	virtual void channelRead(wlr::ChannelHandlerContext*, wlr::ByteBuf*) {}
-    virtual void channelWrite(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf) = 0;
-	virtual bool inbound() {return false;}
-	virtual bool outbound() {return true;}
-};
-
-
-class ThreadPool;
 class ChannelHandlerContext
 {
 public:
-	ChannelHandlerContext(wlr::ChannelHandler* channel_handler, std::string name = "");
+	ChannelHandlerContext(wlr::IHandler* handler, std::string name = "");
 
 	std::string name();
 	void setName(std::string name);
-	wlr::ChannelHandler* channelHandler();
-	void setChannelHandler(wlr::ChannelHandler* channel_handler);
+	wlr::IHandler* handler();
+	void setChannelHandler(wlr::IHandler* handler);
 	virtual wlr::SocketChannel* socketChannel() = 0;
 	virtual wlr::EventLoopGroup* eventLoopGroup() = 0;
 	virtual void invokeConnected() = 0;
@@ -125,30 +90,7 @@ public:
 
 protected:
 	std::string m_name;
-	wlr::ChannelHandler* m_handler = NULL;
-};
-
-
-class XHandler : public ChannelHandler
-{
-public:
-	inline ChannelHandler* getInstance()
-	{
-		wlr::XHandler *x = new wlr::XHandler();
-		x->inbound();
-		return x;
-	}
-public:
-    virtual void handler(wlr::ChannelHandlerContext*, wlr::ByteBuf*) {}
-    virtual void exceptioned(wlr::ChannelHandlerContext*, wlr::Exception*) {}
-    virtual void connected(wlr::ChannelHandlerContext*) {}
-    virtual void registered(wlr::ChannelHandlerContext*) {}
-    virtual void closed(wlr::ChannelHandlerContext*) {}
-    virtual void destroyed(wlr::ChannelHandlerContext*) {}
-	virtual void channelRead(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf) {}
-	virtual void channelWrite(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf) {}
-	virtual bool inbound() {return true;}
-	virtual bool outbound() {return true;}
+	wlr::IHandler* m_handler = NULL;
 };
 
 

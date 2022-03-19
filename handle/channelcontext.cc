@@ -1,17 +1,13 @@
 #include "channelcontext.h"
+#include "inboundchannelhandler.h"
+#include "outboundchannelhandler.h"
 
 
-wlr::DefaultChannelHandlerContext::DefaultChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::ChannelHandler* channel_handler, std::string name)
-	: ChannelHandlerContext(channel_handler, name)
+wlr::DefaultChannelHandlerContext::DefaultChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::IHandler* handler, std::string name)
+	: ChannelHandlerContext(handler, name)
 {
 	this->m_scc_handler = dynamic_cast<wlr::SocketChannelContextHandler*>(socket_channel);
 }
-
-wlr::ChannelHandler* wlr::DefaultChannelHandlerContext::channelHandler()
-{ return this->m_handler; }
-
-void wlr::DefaultChannelHandlerContext::setChannelHandler(wlr::ChannelHandler* channel_handler)
-{ this->m_handler = channel_handler; }
 
 void wlr::DefaultChannelHandlerContext::setEventLoopGroup(wlr::EventLoopGroup* event_loop_group)
 { this->m_elg = event_loop_group; }
@@ -84,13 +80,15 @@ wlr::EventLoopGroup* wlr::DefaultChannelHandlerContext::eventLoopGroup()
 #define W_DEFINITION0(func, invoke) \
 void wlr::DefaultChannelHandlerContext::func() \
 { \
-	if (this->m_handler) this->m_handler->invoke(this); \
+	wlr::ChannelHandler* ch = dynamic_cast<wlr::ChannelHandler*>(this->m_handler); \
+	if (ch) ch->invoke(this); \
     if (this->m_next) this->m_next->func(); \
 }
 #define W_DEFINITION1(func, invoke, type) \
 void wlr::DefaultChannelHandlerContext::func(type val) \
 { \
-    if (this->m_handler) this->m_handler->invoke(this, val); \
+	wlr::ChannelHandler* ch = dynamic_cast<wlr::ChannelHandler*>(this->m_handler); \
+    if (ch) ch->invoke(this, val); \
     if (this->m_next) this->m_next->func(val); \
 }
 
@@ -99,10 +97,8 @@ W_DEFINITION0(invokeRegistered, registered)
 
 void wlr::DefaultChannelHandlerContext::invokeChannelRead(wlr::ByteBuf* buf)
 {
-	if (this->m_handler && this->m_handler->inbound())
-	{
-		this->m_handler->channelRead(this, buf);
-	}
+	wlr::IChannelInbound* ici = dynamic_cast<wlr::IChannelInbound*>(this->m_handler);
+	if (ici) ici->channelRead(this, buf);
 	if (this->m_next) this->m_next->invokeChannelRead(buf);
 }
 
@@ -120,10 +116,8 @@ void wlr::DefaultChannelHandlerContext::invokeChannelWrite(wlr::ByteBuf* buf)
 			this->m_scc_handler->setCurrentContext(this);
 	}
 
-	if (this->m_handler && this->m_handler->outbound())
-    {
-        this->m_handler->channelWrite(this, buf);
-    }
+	wlr::IChannelOutbound* ico = dynamic_cast<wlr::IChannelOutbound*>(this->m_handler);	
+	if (ico) ico->channelWrite(this, buf);
     if (this->m_prev) this->m_prev->invokeChannelWrite(buf);	
 }
 
@@ -147,8 +141,8 @@ wlr::DefaultChannelHandlerContext::~DefaultChannelHandlerContext()
 #undef W_DEFINITION1
 
 
-wlr::HeadChannelHandlerContext::HeadChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::ChannelHandler* channel_handler)
-    : DefaultChannelHandlerContext(socket_channel, channel_handler, "head")
+wlr::HeadChannelHandlerContext::HeadChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::IHandler* handler)
+    : DefaultChannelHandlerContext(socket_channel, handler, "head")
 {}
 
 void wlr::HeadChannelHandlerContext::invokeChannelRead(wlr::ByteBuf* buf)
@@ -159,8 +153,10 @@ void wlr::HeadChannelHandlerContext::invokeChannelRead(wlr::ByteBuf* buf)
 	wlr::SocketChannel* socket_channel = this->socketChannel();
 	LOG_DEBUG("socket channel id = %d, start read\n", socket_channel->channelId().id());
 	try {
-		while((len = socket_channel->read(readBuf)) != -1)
-		{
+		len = socket_channel->read(readBuf);
+		if (len > 0) {
+		//while((len = socket_channel->read(readBuf)) != -1)
+		//{
 			LOG_DEBUG("socket channel id = %d, read buf len = %d\n", socket_channel->channelId().id(), len);
 			this->m_next->invokeChannelRead(readBuf);
 			readBuf->clear();
@@ -193,8 +189,8 @@ void wlr::HeadChannelHandlerContext::invokeChannelWrite(wlr::ByteBuf* buf)
 
 
 
-wlr::TailChannelHandlerContext::TailChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::ChannelHandler* channel_handler)
-	: DefaultChannelHandlerContext(socket_channel, channel_handler, "tail")
+wlr::TailChannelHandlerContext::TailChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::IHandler* handler)
+	: DefaultChannelHandlerContext(socket_channel, handler, "tail")
 {}
 
 void wlr::TailChannelHandlerContext::invokeChannelRead(wlr::ByteBuf* buf)

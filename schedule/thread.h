@@ -55,8 +55,8 @@ private:
 	static std::map<pid_t, Thread*> init();
     static std::map<pid_t, Thread*> s_thread_cache;
 
-    Thread(const Thread&){}
-    Thread operator= (const Thread&){}
+    Thread(const Thread&) = default;
+    Thread& operator=(const Thread&) = default;
 public:
 	static void sleep(int millisecond);												// 当前线程进入睡眠, 单位为毫秒
     static Thread* getCurrentThread(pid_t thread_id = -1);							// 获取当前线程

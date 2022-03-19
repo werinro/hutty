@@ -58,13 +58,21 @@ void wlr::SocketChannelContextHandler::close()
 { this->m_sc->close(); }
 
 bool wlr::SocketChannelContextHandler::inOutbound()
-{ return this->m_in_outbound.get(); }
+{
+	bool* bp = this->m_in_outbound.get();
+	if (bp) return *bp; 
+	return false; 
+}
 
 void wlr::SocketChannelContextHandler::setInOutbound(bool value)
 { this->m_in_outbound.set(value); }
 
 wlr::ChannelHandlerContext* wlr::SocketChannelContextHandler::currentContext()
-{ return this->m_current_context.get(); }
+{
+	wlr::ChannelHandlerContext** chc_ptr = this->m_current_context.get();
+	if (chc_ptr) return *chc_ptr; 
+	return NULL; 
+}
 
 void wlr::SocketChannelContextHandler::setCurrentContext(wlr::ChannelHandlerContext* dchc)
 { this->m_current_context.set(dchc); }

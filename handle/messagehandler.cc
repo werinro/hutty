@@ -25,26 +25,21 @@ void wlr::MessageHandler::destroyed(wlr::ChannelHandlerContext*)
 {
 }
 
-void wlr::MessageHandler::channelRead(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf)
-{
-	int size = buf->readable();
-	char buffer[size];
-	int len = buf->readBytes(buffer, size);
 
-	std::list<std::string> str_list;
-	str_list.push_back(std::string(buffer, len));
-	wlr::SocketChannel* sc = chc->socketChannel();	
-	LOG_DEBUG("channel %d readable = %d read len = %d\n", sc->channelId().id(), size, len);
-	this->channelReadMessage(str_list);
+void wlr::MessageHandler::channelReadHandler(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf, std::list<std::string> *out_list)
+{
+    int size = buf->readable();
+    char buffer[size];
+    int len = buf->readBytes(buffer, size);
+
+    out_list->push_back(std::string(buffer, len));
+    wlr::SocketChannel* sc = chc->socketChannel();
+    LOG_DEBUG("channel %d readable = %d read len = %d\n", sc->channelId().id(), size, len);
 }
 
-void wlr::MessageHandler::channelWrite(wlr::ChannelHandlerContext*, wlr::ByteBuf* buf)
+void wlr::MessageHandler::channelWriteHandler(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf, std::list<std::string> in_list)
 {
-	std::list<std::string> str_list;
-	this->channelWriteMessage(&str_list);
-	for (std::string str : str_list)
-	{
-		buf->writeBytes(str.c_str(), 0, str.length());
-	}	
+    for (std::string str : in_list)
+        buf->writeBytes(str.c_str(), 0, str.length());
 }
 

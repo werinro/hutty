@@ -11,23 +11,23 @@ namespace wlr
 
 
 
-template<class Value, Value v_default = (Value)NULL>
+template<class Value, Value* v_default = (Value*)NULL>
 class ThreadLocal
 {
 public:
-	ThreadLocal() {}
+	ThreadLocal() = default;
 
-	inline Value get()
+	inline Value* get()
 	{ 
 		auto iter = this->m_cache.find(wlr::threadId());
-		if (iter != this->m_cache.end()) return (*iter).second;
+		if (iter != this->m_cache.end()) return &(*iter).second;
 		return v_default; 
 	}
 
 	inline void set(Value value)
 	{ this->m_cache[wlr::threadId()] = value; }
 
-	~ThreadLocal() {}
+	~ThreadLocal() = default;
 
 
 private:

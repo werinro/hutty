@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include "socket.h"
 
 
@@ -51,7 +52,8 @@ int wlr::Socket::recv(char *buf, int len, int flag)
     if (this->m_fg != 1) return -1;
     len = ::recv(this->m_client, buf, len, flag);
 	if (!len) LOG_ERROR("socket is close, msg = %s\n", strerror(errno));
-	if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) LOG_ERROR("socket is error, msg = %s\n", strerror(errno));
+	// if (errno == EAGAIN || errno == EWOULDBLOCK) LOG_ERROR("Resource temporarily unavailable\n");
+	if (errno == EINTR) LOG_ERROR("socket is error, msg = %s\n", strerror(errno));
     return len;
 }
 
@@ -66,7 +68,8 @@ int wlr::Socket::send(char *buf, int len, int flag)
     if (this->m_fg != 1) return -1;
 	len = ::send(this->m_client, buf, len, flag);
 	if (!len) LOG_ERROR("socket is close, msg = %s\n", strerror(errno));
-	if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) LOG_ERROR("socket is error, msg = %s\n", strerror(errno));
+	// if (errno == EAGAIN || errno == EWOULDBLOCK) LOG_ERROR("Resource temporarily unavailable\n");
+	if (errno == EINTR) LOG_ERROR("socket is error, msg = %s\n", strerror(errno));
     return len;
 }
 
@@ -151,6 +154,12 @@ wlr::Socket* wlr::ServerSocket::accept()
     struct sockaddr_in c_addr;
     unsigned int addr_len = sizeof(c_addr);
     int client = ::accept(this->m_server, (struct sockaddr*)&c_addr, &addr_len);
+	if (true) {
+        if(fcntl(client, F_SETFL, fcntl(client, F_GETFL) | O_NONBLOCK) == -1) {
+            printf("set O_NONBLOCK failed!, errno = %d\n", strerror(errno));
+        }
+    }
+
     wlr::Socket* socket = new wlr::Socket;
     socket->m_client = client;
     char ip[64];

@@ -2,17 +2,15 @@
 #include "../../structure/maps.h"
 
 
-void wlr::StringMessageHandler::channelReadMessage(std::list<std::string>& in_list)
+void wlr::StringMessageHandler::handler(std::list<std::string> str_list) 
 {
-	wlr::foreach(in_list, [](std::string message, int index){
-		LOG_INFO("recv client message = %s\n", message.c_str());
-	});
+	wlr::foreach(str_list, [](std::string message, int index){
+        LOG_INFO("recv client message = %s\n", message.c_str());
+    });
+
+	this->write("The server has received the message\n");
 }
 
-void wlr::StringMessageHandler::channelWriteMessage(std::list<std::string> *out_list)
-{
-	out_list->push_back("The server has received the message\n");
-}
 
 
 void wlr::MessageInitializerChannelHandler::initChannel(wlr::SocketChannel* sc)

@@ -13,12 +13,9 @@ namespace wlr
 class DefaultChannelHandlerContext : public ChannelHandlerContext
 {
 public:
-    DefaultChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::ChannelHandler* channel_handler, std::string name = "default");
+    DefaultChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::IHandler* handler, std::string name = "default");
 
-    wlr::ChannelHandler* channelHandler();
-    void setChannelHandler(wlr::ChannelHandler* channel_handler);
     void setEventLoopGroup(wlr::EventLoopGroup* event_loop_group);
-
 	wlr::DefaultChannelHandlerContext* prev();
 	wlr::DefaultChannelHandlerContext* next();
     wlr::DefaultChannelHandlerContext* removePrev();
@@ -49,7 +46,7 @@ protected:
 class HeadChannelHandlerContext : public DefaultChannelHandlerContext
 {
 public:
-	HeadChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::ChannelHandler* channel_handler = NULL);
+	HeadChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::IHandler* handler = NULL);
 	virtual void invokeChannelRead(wlr::ByteBuf* buf) override;
 	virtual void invokeChannelWrite(wlr::ByteBuf* buf) override;
 };
@@ -58,7 +55,7 @@ public:
 class TailChannelHandlerContext : public DefaultChannelHandlerContext
 {
 public:
-	TailChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::ChannelHandler* channel_handler = NULL);
+	TailChannelHandlerContext(wlr::SocketChannel* socket_channel, wlr::IHandler* handler = NULL);
 	virtual void invokeChannelRead(wlr::ByteBuf* buf) override;
 	virtual void invokeChannelWrite(wlr::ByteBuf* buf) override;
 };

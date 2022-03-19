@@ -100,19 +100,3 @@ W_DEFINITION(ThreadException, thread error)
 #undef W_SET_M
 #undef W_DEFINITION
 
-/*void xxx()
-{
-	//throw wlr::Exception("invoke xxx");
-	W_THROW(NullPointerException, "xxx is null");
-}
-
-int main()
-{
-	try {
-		xxx();
-	} catch(wlr::Exception e) {
-		printf("exception message = %s\n", e.message().c_str());
-	}
-
-	return 0;
-}*/

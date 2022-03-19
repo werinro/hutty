@@ -22,6 +22,7 @@ int main(int argc, char** argv)
 				->address(32145, "0.0.0.0");
 	wlr::ChannelFuture* future = server_boot->sync();
 	server_boot->waitForClose();
+	LOG_DEBUG("future = %p\n", future);
 
 	return 0;
 }

@@ -251,6 +251,7 @@ void* wlr::ServerBootstrap::workerSelect(void* wsb)
 					if (!socket_channel->channelPipeline()->destroyed()) {
 						socket_channel->channelPipeline()->fireDestroyed();
 					} else {
+						socket_channel->channelPipeline()->fireDestroyed();
 						delete socket_channel;
 						delete (*l_iter);
 						s_bootstrap->m_accept_mutex.lock();

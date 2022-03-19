@@ -13,7 +13,7 @@ namespace wlr
 {
 
 
-class ChannelHandler;
+class IHandler;
 class ChannelHandlerContext;
 class SocketChannel;
 class ChannelPipeline
@@ -21,8 +21,8 @@ class ChannelPipeline
 public:
 	explicit ChannelPipeline(wlr::SocketChannel* socket_channel) : m_sc(socket_channel) {}
 	virtual ~ChannelPipeline() { /*printf("~ChannelPipeline()\n");*/ }
-	virtual ChannelPipeline* addFirst(wlr::ChannelHandler* handler, std::string name = "") = 0;
-	virtual ChannelPipeline* addLast(wlr::ChannelHandler* handler, std::string name = "") = 0;
+	virtual ChannelPipeline* addFirst(wlr::IHandler* handler, std::string name = "") = 0;
+	virtual ChannelPipeline* addLast(wlr::IHandler* handler, std::string name = "") = 0;
 	virtual wlr::ChannelHandlerContext* handlerContext(std::string name) = 0;
 	virtual wlr::ChannelHandlerContext* headHandlerContext() = 0;	
 	virtual wlr::ChannelHandlerContext* tailHandlerContext() = 0;	

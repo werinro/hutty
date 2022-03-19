@@ -35,6 +35,7 @@ public:
 	std::string readString(int len);
 	int readBuf(ByteBuf* buf, int len = -1);
     int readBytes(char* buf, int len, bool free = false);
+    int onlyReadBytes(char* buf, int len, bool free = false);
 
     int writeInt(int i);
     int writeByte(char c);

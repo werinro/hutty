@@ -1,13 +1,13 @@
-EXTRA = -rdynamic -pthread
+EXTRA = -Wall -rdynamic -pthread
 CC = g++ -std=c++11 $(EXTRA)
 .PHONY: clean compile link
 
 ABS_PATH := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 HEADERS_PATH = ./ ../../handle/ ../../schedule/ ../../io/ ../../utils/ ../../strap/
 
-LINK_ARGS = $(wildcard $(addsuffix *.o, $(addprefix $(ABS_PATH), $(HEADERS_PATH))))
 # LINK_ARGS := $(patsubst %.cc, %.o, $(LINK_ARGS))
-LINK_ARGS += message.cc
+LINK_ARGS = message.cc
+LINK_ARGS += $(wildcard $(addsuffix *.o, $(addprefix $(ABS_PATH), $(HEADERS_PATH))))
 
 TARGET = message
 COMPILE_ARGS = MessageInitializerChannelHandler.o

@@ -24,12 +24,12 @@ wlr::DefaultChannelPipeline::~DefaultChannelPipeline()
 	W_DELETE(this->m_scc_handler);
 }
 
-wlr::ChannelPipeline* wlr::DefaultChannelPipeline::addFirst(wlr::ChannelHandler* handler, std::string name)
+wlr::ChannelPipeline* wlr::DefaultChannelPipeline::addFirst(wlr::IHandler* handler, std::string name)
 {
 	this->m_head->insertNext(new wlr::DefaultChannelHandlerContext(this->m_scc_handler, handler, name));
 }
 
-wlr::ChannelPipeline* wlr::DefaultChannelPipeline::addLast(wlr::ChannelHandler* handler, std::string name)
+wlr::ChannelPipeline* wlr::DefaultChannelPipeline::addLast(wlr::IHandler* handler, std::string name)
 {
 	this->m_tail->insertPrev(new wlr::DefaultChannelHandlerContext(this->m_scc_handler, handler, name));
 }
@@ -80,9 +80,12 @@ void wlr::DefaultChannelPipeline::fireClosed()
 
 void wlr::DefaultChannelPipeline::fireDestroyed()
 { 
-	W_DEBUG_PRINT(fireDestroyed)
-	this->m_destroyed = 1;
-	this->m_head->invokeDestroyed(); 
+	if (this->m_destroyed) {
+		W_DEBUG_PRINT(fireDestroyed)
+		this->m_head->invokeDestroyed(); 
+	} else {
+		this->m_destroyed = 1;
+	}
 }
 
 void wlr::DefaultChannelPipeline::fireChannelWrite()

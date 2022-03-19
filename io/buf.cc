@@ -124,6 +124,22 @@ int wlr::ByteBuf::readBytes(char *buf, int len, bool free)
 	return read - 1;
 }
 
+int wlr::ByteBuf::onlyReadBytes(char* buf, int len, bool free)
+{
+	int offset = -1;
+	this->m_rmutex.lock();
+	int readable = this->readable();
+	if (free || readable >= len) {
+        while(++offset < len && readable-- > 0)
+        {
+            *buf = this->m_buf[this->m_read_index + offset];
+            buf++;
+        }
+	}
+	this->m_rmutex.unlock();
+	return offset + 1;
+}
+
 std::string wlr::ByteBuf::readString(int len)
 {
 	std::string str;

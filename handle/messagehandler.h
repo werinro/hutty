@@ -2,35 +2,32 @@
 #define __WLR__MESSAGEHANDLER__H
 
 
-#include <list>
-#include "handler.h"
+#include <string>
+#include "bytetransformhandler.h"
 
 
 namespace wlr
 {
 
 
-class MessageHandler : public ChannelHandler
+class MessageHandler 
+	: public ByteTransformHandler<std::string> 
+	, public ChannelHandler
 {
-private:
+
+	virtual void channelReadHandler(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* in_buf, std::list<std::string> *out_list) override;
+    virtual void channelWriteHandler(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* out_buf, std::list<std::string> in_list) override;
+public:
+
 	virtual void handler(wlr::ChannelHandlerContext*, wlr::ByteBuf*) override;
-	virtual void exceptioned(wlr::ChannelHandlerContext*, wlr::Exception*) override;
+    virtual void exceptioned(wlr::ChannelHandlerContext*, wlr::Exception*) override;
     virtual void connected(wlr::ChannelHandlerContext*) override;
     virtual void registered(wlr::ChannelHandlerContext*) override;
     virtual void closed(wlr::ChannelHandlerContext*) override;
     virtual void destroyed(wlr::ChannelHandlerContext*) override;
-    virtual bool inbound() override {return true;}
-    virtual bool outbound() override {return true;}
 
-	virtual void channelRead(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf) override;
-	virtual void channelWrite(wlr::ChannelHandlerContext* chc, wlr::ByteBuf* buf) override;
-
-public:
-	virtual void channelReadMessage(std::list<std::string>&) {}
-	virtual void channelWriteMessage(std::list<std::string>*) {}
+	virtual ~MessageHandler() override = default;
 };
-
-
 
 
 

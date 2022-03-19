@@ -13,8 +13,8 @@ namespace wlr
 class StringMessageHandler : public MessageHandler
 {
 public:
-	virtual void channelReadMessage(std::list<std::string>& in_list);
-    virtual void channelWriteMessage(std::list<std::string>* out_list);
+	virtual void handler(std::list<std::string> str_list);
+	virtual ~StringMessageHandler() = default;
 };
 
 

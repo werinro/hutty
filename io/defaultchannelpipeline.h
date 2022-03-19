@@ -16,8 +16,8 @@ class DefaultChannelPipeline : public ChannelPipeline
 public:
 	DefaultChannelPipeline(wlr::SocketChannel* socket_channel);
 	virtual ~DefaultChannelPipeline() override;
-	virtual wlr::ChannelPipeline* addFirst(wlr::ChannelHandler* handler, std::string name) override;
-	virtual wlr::ChannelPipeline* addLast(wlr::ChannelHandler* handler, std::string name) override;
+	virtual wlr::ChannelPipeline* addFirst(wlr::IHandler* handler, std::string name) override;
+	virtual wlr::ChannelPipeline* addLast(wlr::IHandler* handler, std::string name) override;
 	virtual wlr::ChannelHandlerContext* handlerContext(std::string name) override;
 	virtual wlr::ChannelHandlerContext* headHandlerContext() override;	
 	virtual wlr::ChannelHandlerContext* tailHandlerContext() override;	
